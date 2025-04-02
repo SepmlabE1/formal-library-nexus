@@ -101,7 +101,7 @@ const Index = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Books"
-          value={1,248}
+          value={1248}
           description="+12 this month"
           icon={<BookOpen size={24} />}
         />
