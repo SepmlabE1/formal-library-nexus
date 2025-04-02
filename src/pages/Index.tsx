@@ -4,130 +4,75 @@ import Layout from "@/components/layout/Layout";
 import StatCard from "@/components/dashboard/StatCard";
 import RecentBooks from "@/components/dashboard/RecentBooks";
 import RecentLoans from "@/components/dashboard/RecentLoans";
-import { Book } from "@/types/book";
-import { Loan } from "@/types/loan";
+import { useBooks } from "@/hooks/useBooks";
+import { useMembers } from "@/hooks/useMembers";
+import { useLoans } from "@/hooks/useLoans";
 
 const Index = () => {
-  // Mock data for demonstration
-  const recentBooks: Book[] = [
-    {
-      id: "1",
-      title: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      isbn: "978-0446310789",
-      category: "Fiction",
-      available: true,
-      copies: 3,
-      addedDate: "2023-06-15"
-    },
-    {
-      id: "2",
-      title: "1984",
-      author: "George Orwell",
-      isbn: "978-0451524935",
-      category: "Science Fiction",
-      available: true,
-      copies: 2,
-      addedDate: "2023-06-10"
-    },
-    {
-      id: "3",
-      title: "The Great Gatsby",
-      author: "F. Scott Fitzgerald",
-      isbn: "978-0743273565",
-      category: "Fiction",
-      available: false,
-      copies: 1,
-      addedDate: "2023-06-05"
-    },
-    {
-      id: "4",
-      title: "Pride and Prejudice",
-      author: "Jane Austen",
-      isbn: "978-0141439518",
-      category: "Classic",
-      available: true,
-      copies: 4,
-      addedDate: "2023-06-01"
-    }
-  ];
+  // Fetch data using our hooks
+  const { booksQuery } = useBooks();
+  const { membersQuery } = useMembers();
+  const { loansQuery, loanStatsQuery, activeLoansQuery } = useLoans();
 
-  const recentLoans: Loan[] = [
-    {
-      id: "1",
-      memberId: "M001",
-      memberName: "John Smith",
-      bookId: "1",
-      bookTitle: "To Kill a Mockingbird",
-      checkoutDate: "2023-06-20",
-      dueDate: "2023-07-04",
-      status: "Active"
-    },
-    {
-      id: "2",
-      memberId: "M002",
-      memberName: "Emily Johnson",
-      bookId: "3",
-      bookTitle: "The Great Gatsby",
-      checkoutDate: "2023-06-15",
-      dueDate: "2023-06-29",
-      status: "Overdue"
-    },
-    {
-      id: "3",
-      memberId: "M003",
-      memberName: "Michael Brown",
-      bookId: "2",
-      bookTitle: "1984",
-      checkoutDate: "2023-06-10",
-      dueDate: "2023-06-24",
-      returnDate: "2023-06-22",
-      status: "Returned"
-    },
-    {
-      id: "4",
-      memberId: "M004",
-      memberName: "Sarah Wilson",
-      bookId: "4",
-      bookTitle: "Pride and Prejudice",
-      checkoutDate: "2023-06-05",
-      dueDate: "2023-06-19",
-      status: "Active"
-    }
-  ];
+  // Loading state
+  const isLoading = booksQuery.isLoading || membersQuery.isLoading || 
+                    loansQuery.isLoading || loanStatsQuery.isLoading;
+
+  // Calculate statistics
+  const totalBooks = booksQuery.data?.length || 0;
+  const activeMembers = membersQuery.data?.filter(m => m.status === "Active").length || 0;
+  const booksOnLoan = activeLoansQuery.data?.length || 0;
+  const overdueBooks = activeLoansQuery.data?.filter(loan => loan.status === "Overdue").length || 0;
+
+  // Get recent books and loans
+  const recentBooks = booksQuery.data?.slice(0, 4) || [];
+  const recentLoans = loansQuery.data?.slice(0, 4) || [];
 
   return (
     <Layout title="Dashboard">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Books"
-          value={1248}
-          description="+12 this month"
+          value={totalBooks}
+          description={`${booksQuery.data?.filter(b => b.addedDate > (new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0]).length || 0} this month`}
           icon={<BookOpen size={24} />}
+          isLoading={isLoading}
         />
         <StatCard
           title="Active Members"
-          value={342}
-          description="+8 this month"
+          value={activeMembers}
+          description={`${membersQuery.data?.filter(m => m.joinDate > (new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0]).length || 0} this month`}
           icon={<Users size={24} />}
+          isLoading={isLoading}
         />
         <StatCard
           title="Books on Loan"
-          value={87}
-          description="24 due this week"
+          value={booksOnLoan}
+          description={`${activeLoansQuery.data?.filter(loan => {
+            const dueDate = new Date(loan.dueDate);
+            const now = new Date();
+            const nextWeek = new Date();
+            nextWeek.setDate(now.getDate() + 7);
+            return dueDate <= nextWeek && dueDate >= now;
+          }).length || 0} due this week`}
           icon={<RotateCcw size={24} />}
+          isLoading={isLoading}
         />
         <StatCard
           title="Overdue Books"
-          value={13}
-          description="5 more than last week"
+          value={overdueBooks}
+          description={`${overdueBooks - (loansQuery.data?.filter(loan => 
+            loan.status === "Overdue" && 
+            new Date(loan.dueDate) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          ).length || 0)} more than last week`}
           icon={<BookMarked size={24} />}
+          isLoading={isLoading}
         />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <RecentLoans loans={recentLoans} />
-        <RecentBooks books={recentBooks} />
+        <RecentLoans loans={recentLoans} isLoading={isLoading} />
+        <RecentBooks books={recentBooks} isLoading={isLoading} />
       </div>
     </Layout>
   );
