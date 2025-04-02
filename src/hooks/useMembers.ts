@@ -23,7 +23,7 @@ export const useMembers = () => {
 
   // Add a new member
   const addMemberMutation = useMutation({
-    mutationFn: (member: Omit<Member, "id" | "joinDate" | "activeLoans">) => 
+    mutationFn: (member: Omit<Member, "id" | "join_date">) => 
       addMember(member),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["members"] });

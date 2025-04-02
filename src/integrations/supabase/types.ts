@@ -9,7 +9,153 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      books: {
+        Row: {
+          added_date: string
+          author: string
+          available: boolean
+          category: string
+          copies: number
+          cover_image: string | null
+          description: string | null
+          id: string
+          isbn: string
+          location: string | null
+          page_count: number | null
+          publication_year: number | null
+          publisher: string | null
+          title: string
+        }
+        Insert: {
+          added_date?: string
+          author: string
+          available?: boolean
+          category: string
+          copies?: number
+          cover_image?: string | null
+          description?: string | null
+          id?: string
+          isbn: string
+          location?: string | null
+          page_count?: number | null
+          publication_year?: number | null
+          publisher?: string | null
+          title: string
+        }
+        Update: {
+          added_date?: string
+          author?: string
+          available?: boolean
+          category?: string
+          copies?: number
+          cover_image?: string | null
+          description?: string | null
+          id?: string
+          isbn?: string
+          location?: string | null
+          page_count?: number | null
+          publication_year?: number | null
+          publisher?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      loans: {
+        Row: {
+          book_id: string
+          book_title: string
+          checkout_date: string
+          due_date: string
+          id: string
+          member_id: string
+          member_name: string
+          notes: string | null
+          return_date: string | null
+          status: string
+        }
+        Insert: {
+          book_id: string
+          book_title: string
+          checkout_date?: string
+          due_date: string
+          id?: string
+          member_id: string
+          member_name: string
+          notes?: string | null
+          return_date?: string | null
+          status: string
+        }
+        Update: {
+          book_id?: string
+          book_title?: string
+          checkout_date?: string
+          due_date?: string
+          id?: string
+          member_id?: string
+          member_name?: string
+          notes?: string | null
+          return_date?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          active_loans: number
+          address: string | null
+          email: string
+          first_name: string
+          id: string
+          join_date: string
+          last_name: string
+          membership_id: string
+          membership_type: string
+          phone: string | null
+          status: string
+        }
+        Insert: {
+          active_loans?: number
+          address?: string | null
+          email: string
+          first_name: string
+          id?: string
+          join_date?: string
+          last_name: string
+          membership_id: string
+          membership_type: string
+          phone?: string | null
+          status?: string
+        }
+        Update: {
+          active_loans?: number
+          address?: string | null
+          email?: string
+          first_name?: string
+          id?: string
+          join_date?: string
+          last_name?: string
+          membership_id?: string
+          membership_type?: string
+          phone?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
